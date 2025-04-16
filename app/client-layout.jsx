@@ -10,7 +10,7 @@ export default function ClientLayout({ children }) {
     <SessionProvider>
       <Navbar />
       {children}
-      <Footer />
+      {/* <Footer /> */}
     </SessionProvider>
   );
 }

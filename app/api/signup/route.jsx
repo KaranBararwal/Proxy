@@ -1,20 +1,24 @@
-// app/api/signup/route.js
 import { connectToDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
   try {
-    const { name, email, password } = await req.json();
+    const { username, email, password } = await req.json();
     await connectToDB();
 
-    const existingUser = await User.findOne({ email });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return new Response(JSON.stringify({ message: 'Invalid email format' }), { status: 400 });
+    }
+
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return new Response(JSON.stringify({ message: 'User already exists' }), { status: 400 });
+      return new Response(JSON.stringify({ message: 'Email or username already in use' }), { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword });
+    const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
     return new Response(JSON.stringify({ message: 'User created successfully' }), { status: 201 });

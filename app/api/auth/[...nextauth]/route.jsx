@@ -6,7 +6,7 @@ import { connectToDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -15,35 +15,31 @@ const handler = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        // Connect to the database
         await connectToDB();
-        
-        // Check if the user exists
         const user = await User.findOne({ email: credentials.email });
         if (!user) throw new Error('No user found');
-        
-        // Check if the password matches
         const isMatch = await bcrypt.compare(credentials.password, user.password);
         if (!isMatch) throw new Error('Invalid password');
-        
         return { id: user._id, name: user.username, email: user.email };
       },
     }),
   ],
   session: {
-    strategy: 'jwt', // Using JWT-based sessions
+    strategy: 'jwt',
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.user = user; // Store user data in token
+      if (user) token.user = user;
       return token;
     },
     async session({ session, token }) {
-      session.user = token.user; // Attach user info to session
+      session.user = token.user;
       return session;
     },
   },
-});
+};
 
-// Export handler for both GET and POST methods
+const handler = NextAuth(authOptions);
+
+// Export both handler and authOptions
 export { handler as GET, handler as POST };
