@@ -11,8 +11,16 @@ export async function GET() {
 
   await connectToDB();
 
-  const markedByCount = await Proxy.countDocuments({ markedBy: session.user.email });
-  const markedForCount = await Proxy.countDocuments({ markedFor: session.user.name });
+  // Only count accepted proxies
+  const markedByCount = await Proxy.countDocuments({
+    markedBy: session.user.email,
+    status: 'accepted',
+  });
+
+  const markedForCount = await Proxy.countDocuments({
+    markedFor: session.user.name,
+    status: 'accepted',
+  });
 
   return new Response(JSON.stringify({ markedByCount, markedForCount }), { status: 200 });
 }

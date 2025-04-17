@@ -1,37 +1,41 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { getSession } from 'next-auth/react';
+import { getSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation'; // or 'next/router' if using pages dir
 
 export default function ProxiesMarkedPage() {
   const [proxies, setProxies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const router = useRouter();
 
   const fetchProxies = async (sessionToken) => {
-    
     if (!sessionToken) {
       setError('No session token found.');
-      setLoading(false);
+      logoutUser(); // 👈 Logout and redirect
       return;
     }
-    
-    console.log('Session Token:', sessionToken);
+
     try {
       const res = await fetch('/api/proxies/by-you', {
         headers: {
-          Authorization: `Bearer ${sessionToken}`, // Send the session token in Authorization header
+          Authorization: `Bearer ${sessionToken}`,
         },
       });
-  
+
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || 'Failed to fetch proxies');
+        if (res.status === 401) {
+          logoutUser(); // 👈 Logout on unauthorized
+        } else {
+          setError(data.error || 'Failed to fetch proxies');
+        }
         setLoading(false);
         return;
       }
-  
+
       const data = await res.json();
-      setProxies(data); // Assuming the response contains an array of proxies
+      setProxies(data);
       setLoading(false);
     } catch (error) {
       setError('An error occurred while fetching proxies');
@@ -39,21 +43,22 @@ export default function ProxiesMarkedPage() {
       console.error('Fetch error:', error);
     }
   };
-  
+
+  const logoutUser = () => {
+    signOut({ redirect: false }); // Avoids auto redirect by NextAuth
+    router.push('/login'); // Redirect manually to login
+  };
 
   useEffect(() => {
     const checkSession = async () => {
       const session = await getSession();
 
-      console.log('Session:', session); // Log the full session object
-
       if (!session || !session.token) {
         setError('User is not authenticated.');
-        setLoading(false);
+        logoutUser(); // 👈 Logout if session is missing or invalid
         return;
       }
 
-      // Pass the token to the fetch function
       fetchProxies(session.token);
     };
 
@@ -63,11 +68,10 @@ export default function ProxiesMarkedPage() {
   const handleDelete = async (id) => {
     const confirmed = confirm('Are you sure you want to delete this proxy?');
     if (confirmed) {
-      // Delete proxy via API
       const res = await fetch(`/api/proxies/${id}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // Ensure you pass the token for authorization
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
 
@@ -76,7 +80,6 @@ export default function ProxiesMarkedPage() {
         return;
       }
 
-      // Update the UI by removing the deleted proxy
       setProxies(prev => prev.filter(proxy => proxy._id !== id));
     }
   };
