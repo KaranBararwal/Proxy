@@ -5,6 +5,8 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { connectToDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken'; // 👈 import here if not already
+
 
 export const authOptions = {
   providers: [
@@ -29,14 +31,32 @@ export const authOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.user = user;
+      if (user) {
+        const userPayload = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        };
+    
+        // ✅ create a real signed JWT
+        const signedJwt = jwt.sign(
+          { user: userPayload },
+          process.env.JWT_SECRET,
+          { expiresIn: '1h' } // optional
+        );
+    
+        token.user = userPayload;
+        token.accessToken = signedJwt; // 👈 store the real signed JWT
+      }
       return token;
     },
-    async session({ session, token }) {
+    session({ session, token }) {
       session.user = token.user;
+      session.token = token.accessToken; // ✅ now contains real JWT
       return session;
-    },
+    }    
   },
+  
 };
 
 const handler = NextAuth(authOptions);

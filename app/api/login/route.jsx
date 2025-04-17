@@ -23,13 +23,9 @@ export async function POST(req) {
       { expiresIn: '1h' }
     );
 
-    // Store the token in MongoDB
-    user.jwtToken = token;
-    await user.save();
-
-    // Return token in the response
+    // Return the token in the response body
     return new Response(
-      JSON.stringify({ message: 'Login successful', token }),
+      JSON.stringify({ message: 'Login successful', token }), // Include the token here
       { status: 200 }
     );
   } catch (error) {

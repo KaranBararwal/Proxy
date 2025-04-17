@@ -53,45 +53,63 @@ export default function SignUp() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-8 max-w-md mx-auto">
-      <h2 className="text-xl font-bold mb-4">Sign Up</h2>
-
-      <input
-        name="username"
-        value={form.username}
-        onChange={handleChange}
-        placeholder="Username"
-        className="mb-2 p-2 w-full border"
-      />
-      {usernameAvailable === false && (
-        <p className="text-red-500 text-sm">Username is already taken</p>
-      )}
-      {usernameAvailable === true && (
-        <p className="text-green-500 text-sm">Username is available</p>
-      )}
-
-      <input
-        name="email"
-        value={form.email}
-        onChange={handleChange}
-        placeholder="Email"
-        className="mb-2 p-2 w-full border"
-      />
-      <input
-        name="password"
-        type="password"
-        value={form.password}
-        onChange={handleChange}
-        placeholder="Password"
-        className="mb-4 p-2 w-full border"
-      />
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-        disabled={usernameAvailable === false}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black text-white">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-gray-800 shadow-lg rounded-2xl p-10 w-full max-w-md transition-all duration-300"
       >
-        Register
-      </button>
-    </form>
+        <h2 className="text-3xl font-bold text-center mb-6 text-blue-400">Create an Account</h2>
+
+        <div className="mb-4">
+          <input
+            name="username"
+            value={form.username}
+            onChange={handleChange}
+            placeholder="Username"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 text-white"
+          />
+          {usernameAvailable === false && (
+            <p className="text-red-400 text-sm mt-1">Username is already taken</p>
+          )}
+          {usernameAvailable === true && (
+            <p className="text-green-400 text-sm mt-1">Username is available</p>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <input
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="Email"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 text-white"
+          />
+        </div>
+
+        <div className="mb-6">
+          <input
+            name="password"
+            type="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="Password"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 text-white"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={usernameAvailable === false}
+          className={`w-full py-2 px-4 text-white rounded-md font-semibold transition duration-200 ${
+            usernameAvailable === false
+              ? 'bg-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          Register
+        </button>
+      </form>
+    </div>
   );
 }

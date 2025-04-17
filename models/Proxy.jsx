@@ -1,11 +1,15 @@
 import mongoose from 'mongoose';
 
-const proxySchema = new mongoose.Schema({
+const ProxySchema = new mongoose.Schema({
   subject: { type: String, required: true },
   student: { type: String, required: true },
   date: { type: String, required: true },
-  markedBy: { type: String, required: true }, // email of the user
+  markedBy: { type: String, required: true },
+  markedFor: { type: String, required: true },
+  status: { type: String, default: 'pending' }, // can be 'pending', 'accepted', 'rejected'
 });
 
-const Proxy = mongoose.models.Proxy || mongoose.model('Proxy', proxySchema);
+// ✅ Prevent model overwrite error in development
+const Proxy = mongoose.models.Proxy || mongoose.model('Proxy', ProxySchema);
+
 export default Proxy;

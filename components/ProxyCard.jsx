@@ -19,7 +19,7 @@ const ProxyCard = ({ proxiesGiven, proxiesReceived }) => {
         >
           <div>
             <span className="text-gray-700 dark:text-gray-300 text-lg font-medium">
-              ✅ Proxies You’ve Marked
+              ✅ Proxies You've Marked
             </span>
           </div>
           <div className="flex items-center gap-2">

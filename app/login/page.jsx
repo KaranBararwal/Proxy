@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
@@ -9,13 +9,14 @@ const LoginPage = () => {
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
+    // Using next-auth signIn function
     const res = await signIn('credentials', {
       redirect: false,
       email: formData.email,
@@ -25,6 +26,11 @@ const LoginPage = () => {
     if (res.error) {
       setError(res.error);
     } else {
+      // ✅ Store JWT token in localStorage (if desired)
+      if (res?.token) {
+        localStorage.setItem('token', res.token); // Save the token in localStorage
+      }
+
       // ✅ Session is now created, user will be available in Navbar
       router.push('/'); // Redirect to home page after login
     }

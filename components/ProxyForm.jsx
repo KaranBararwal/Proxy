@@ -6,7 +6,22 @@ const ProxyForm = () => {
   const [subject, setSubject] = useState('');
   const [date, setDate] = useState('');
   const [subjectsList, setSubjectsList] = useState([]);
+  const [userEmail, setUserEmail] = useState('');
 
+  // Fetch session user
+  useEffect(() => {
+    const fetchSession = async () => {
+      const res = await fetch('/api/auth/session');
+      const data = await res.json();
+      if (res.ok && data?.user?.email) {
+        setUserEmail(data.user.email);
+      }
+    };
+
+    fetchSession();
+  }, []);
+
+  // Fetch subjects from admin API
   useEffect(() => {
     const fetchSubjects = async () => {
       const res = await fetch('/api/admin/subjects');
@@ -21,29 +36,32 @@ const ProxyForm = () => {
     fetchSubjects();
   }, []);
 
+  // Handle form submit
   const handleAddProxy = async (e) => {
     e.preventDefault();
 
-    const res = await fetch('/api/proxies', {
+    const res = await fetch('/api/mark-proxy', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        student : proxyName,  // ✅ renamed to match backend
         subject,
+        student: proxyName,
         date,
+        markedBy: userEmail,
+        markedFor: proxyName, // marking for this user
       }),
     });
 
     const data = await res.json();
     if (res.ok) {
-      alert('Proxy added successfully');
+      alert('Proxy marked successfully (pending approval)');
       setProxyName('');
       setSubject('');
       setDate('');
     } else {
-      alert(data.error || 'Failed to add proxy');
+      alert(data.message || 'Failed to mark proxy');
     }
   };
 
