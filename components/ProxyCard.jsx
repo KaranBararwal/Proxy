@@ -1,9 +1,12 @@
-'use client'
-import React from 'react'
-import { useRouter } from 'next/navigation'
+import React from 'react';
+import { useRouter } from 'next/navigation';
 
-const ProxyCard = ({ proxiesGiven, proxiesReceived }) => {
-  const router = useRouter()
+const ProxyCard = ({ proxiesGiven, proxiesReceived, loading }) => {
+  const router = useRouter();
+
+  const LoadingSpinner = () => (
+    <div className="h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+  );
 
   return (
     <div className="max-w-md mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 mt-10 border border-gray-200 dark:border-gray-700">
@@ -11,7 +14,6 @@ const ProxyCard = ({ proxiesGiven, proxiesReceived }) => {
         Proxy Summary
       </h2>
       <div className="space-y-4">
-
         {/* Proxies You've Marked */}
         <div
           onClick={() => router.push('/proxies-marked')}
@@ -23,12 +25,18 @@ const ProxyCard = ({ proxiesGiven, proxiesReceived }) => {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-blue-600 dark:text-blue-400 text-xl font-semibold">
-              {proxiesGiven}
-            </span>
-            <span className="text-blue-600 dark:text-blue-400 transform transition-transform group-hover:translate-x-1">
-              →
-            </span>
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <>
+                <span className="text-blue-600 dark:text-blue-400 text-xl font-semibold">
+                  {proxiesGiven}
+                </span>
+                <span className="text-blue-600 dark:text-blue-400 transform transition-transform group-hover:translate-x-1">
+                  →
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -43,18 +51,23 @@ const ProxyCard = ({ proxiesGiven, proxiesReceived }) => {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-green-600 dark:text-green-400 text-xl font-semibold">
-              {proxiesReceived}
-            </span>
-            <span className="text-green-600 dark:text-green-400 transform transition-transform group-hover:translate-x-1">
-              →
-            </span>
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <>
+                <span className="text-green-600 dark:text-green-400 text-xl font-semibold">
+                  {proxiesReceived}
+                </span>
+                <span className="text-green-600 dark:text-green-400 transform transition-transform group-hover:translate-x-1">
+                  →
+                </span>
+              </>
+            )}
           </div>
         </div>
-
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProxyCard
+export default ProxyCard;
