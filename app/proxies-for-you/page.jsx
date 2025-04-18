@@ -78,13 +78,13 @@ export default function ProxiesForYouPage() {
                   <div className="flex flex-wrap gap-3 mt-3">
                     <button
                       onClick={() => handleAction(item._id, 'accepted')}
-                      className="px-4 py-1 rounded bg-green-600 text-white hover:bg-green-700"
+                      className="cursor-pointer px-4 py-1 rounded bg-green-600 text-white hover:bg-green-700"
                     >
                       Accept
                     </button>
                     <button
                       onClick={() => handleAction(item._id, 'rejected')}
-                      className="px-4 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                      className="cursor-pointer px-4 py-1 rounded bg-red-600 text-white hover:bg-red-700"
                     >
                       Reject
                     </button>

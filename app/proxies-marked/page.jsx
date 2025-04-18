@@ -3,23 +3,19 @@ import React, { useEffect, useState } from 'react';
 import { getSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
+
 export default function ProxiesMarkedPage() {
   const [proxies, setProxies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sessionToken, setSessionToken] = useState('');
   const router = useRouter();
 
-  const fetchProxies = async (sessionToken) => {
-    if (!sessionToken) {
-      setError('No session token found.');
-      logoutUser();
-      return;
-    }
-
+  const fetchProxies = async (token) => {
     try {
       const res = await fetch('/api/proxies/by-you', {
         headers: {
-          Authorization: `Bearer ${sessionToken}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -59,6 +55,7 @@ export default function ProxiesMarkedPage() {
         return;
       }
 
+      setSessionToken(session.token); // store for delete use
       fetchProxies(session.token);
     };
 
@@ -66,29 +63,41 @@ export default function ProxiesMarkedPage() {
   }, []);
 
   const handleDelete = async (id) => {
-    const confirmed = confirm('Are you sure you want to delete this proxy?');
-    if (confirmed) {
+    const token = sessionToken; // ✅ use the state value you set earlier
+  
+    if (!token) {
+      console.error("❌ No token found in session");
+      return;
+    }
+  
+    try {
       const res = await fetch(`/api/proxies/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
-
-      if (!res.ok) {
-        setError('Failed to delete proxy');
-        return;
-      }
-
-      setProxies(prev => prev.filter(proxy => proxy._id !== id));
+  
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete");
+  
+      console.log("✅ Deleted:", data.message);
+  
+      // Optional: Refresh proxies after deletion
+      setProxies((prev) => prev.filter((proxy) => proxy._id !== id));
+    } catch (err) {
+      console.error("❌ Delete failed:", err.message);
     }
   };
-
+  
+  
+  
+  
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 px-4 py-6 pt-28 sm:pt-28 md:pt-24 lg:pt-20 xl:pt-20">
-      {/* 🧠 pt-28 ensures the page content appears below fixed Navbar */}
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 px-4 py-6 pt-28">
       <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6 text-center">
-        Proxies You’ve Marked
+        Proxies You've Marked
       </h1>
 
       {loading ? (
@@ -111,7 +120,7 @@ export default function ProxiesMarkedPage() {
               </div>
               <button
                 onClick={() => handleDelete(proxy._id)}
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition mt-2 sm:mt-0"
+                className="cursor-pointer bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition mt-2 sm:mt-0"
               >
                 Delete
               </button>
