@@ -7,22 +7,51 @@ export async function GET(request) {
     const token = request.headers.get('Authorization')?.split(' ')[1];
 
     if (!token) {
-      return new Response(JSON.stringify({ error: 'No token provided' }), { status: 401 });
+      return new Response(JSON.stringify({ error: 'No token provided' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    const user = await verifyJwt(token);
-    if (!user || !user.email) {
-      return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401 });
+    let user;
+    try {
+      user = await verifyJwt(token);
+    } catch (err) {
+      console.error('JWT verification failed:', err);
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    await connectToDB();
+    if (!user?.email) {
+      return new Response(JSON.stringify({ error: 'Not authenticated' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
-    // ✅ Fix here: Match on email and status
+    try {
+      await connectToDB();
+    } catch (err) {
+      console.error('DB connection error:', err);
+      return new Response(JSON.stringify({ error: 'Database connection failed' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const proxies = await Proxy.find({ markedBy: user.email, status: 'accepted' });
 
-    return new Response(JSON.stringify(proxies), { status: 200 });
+    return new Response(JSON.stringify(proxies), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Error fetching proxies:', error);
-    return new Response(JSON.stringify({ error: 'Failed to fetch proxies' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Failed to fetch proxies' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
