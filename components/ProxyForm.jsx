@@ -1,5 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // 👈 Required CSS
 
 const ProxyForm = () => {
   const [proxyName, setProxyName] = useState('');
@@ -17,7 +19,6 @@ const ProxyForm = () => {
         setUserEmail(data.user.email);
       }
     };
-
     fetchSession();
   }, []);
 
@@ -32,7 +33,6 @@ const ProxyForm = () => {
         console.error('Failed to fetch subjects:', data.error);
       }
     };
-
     fetchSubjects();
   }, []);
 
@@ -42,31 +42,32 @@ const ProxyForm = () => {
 
     const res = await fetch('/api/mark-proxy', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         subject,
         student: proxyName,
         date,
         markedBy: userEmail,
-        markedFor: proxyName, // marking for this user
+        markedFor: proxyName,
       }),
     });
 
     const data = await res.json();
+
     if (res.ok) {
-      alert('Proxy marked successfully (pending approval)');
+      toast.success('✅ Proxy marked successfully (pending approval)');
       setProxyName('');
       setSubject('');
       setDate('');
     } else {
-      alert(data.message || 'Failed to mark proxy');
+      toast.error(data.message || '❌ Failed to mark proxy');
     }
   };
 
   return (
     <div className="max-w-md mx-auto bg-white dark:bg-gray-800 mt-10 p-6 rounded-xl shadow-md">
+      <ToastContainer position="top-right" autoClose={3000} theme="colored" />
+
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Mark a Proxy</h2>
       <form onSubmit={handleAddProxy} className="space-y-4">
         <input
