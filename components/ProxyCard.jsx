@@ -1,6 +1,5 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
-
 const ProxyCard = ({ proxiesGiven, proxiesReceived, loading }) => {
   const router = useRouter();
 

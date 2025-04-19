@@ -9,8 +9,10 @@ export default function ClientLayout({ children }) {
   return (
     <SessionProvider>
       <Navbar />
-      {children}
-      {/* <Footer /> */}
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 pt-10 pb-24 px-4">
+        {children}
+      </div>
+      <Footer />
     </SessionProvider>
   );
 }
