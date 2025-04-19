@@ -1,16 +1,21 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; // 👈 Required CSS
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProxyForm = () => {
   const [proxyName, setProxyName] = useState('');
   const [subject, setSubject] = useState('');
   const [date, setDate] = useState('');
+  const [course, setCourse] = useState('');
+  const [semester, setSemester] = useState('');
   const [subjectsList, setSubjectsList] = useState([]);
   const [userEmail, setUserEmail] = useState('');
 
-  // Fetch session user
+  const [filteredSubjects, setFilteredSubjects] = useState([]);
+  const [availableCourses, setAvailableCourses] = useState([]);
+  const [availableSemesters, setAvailableSemesters] = useState([]);
+
   useEffect(() => {
     const fetchSession = async () => {
       const res = await fetch('/api/auth/session');
@@ -22,13 +27,16 @@ const ProxyForm = () => {
     fetchSession();
   }, []);
 
-  // Fetch subjects from admin API
   useEffect(() => {
     const fetchSubjects = async () => {
       const res = await fetch('/api/admin/subjects');
       const data = await res.json();
+      console.log("Fetched subjects:", data);
       if (res.ok) {
         setSubjectsList(data);
+
+        const courses = [...new Set(data.map((subj) => subj.course).filter(Boolean))];
+        setAvailableCourses(courses);
       } else {
         console.error('Failed to fetch subjects:', data.error);
       }
@@ -36,7 +44,30 @@ const ProxyForm = () => {
     fetchSubjects();
   }, []);
 
-  // Handle form submit
+  useEffect(() => {
+    const semesters = subjectsList
+      .filter((subj) =>
+        subj?.course?.trim?.().toLowerCase() === course.trim().toLowerCase()
+      )
+      .map((subj) => subj.semester)
+      .filter(Boolean);
+
+    const uniqueSemesters = [...new Set(semesters)];
+    setAvailableSemesters(uniqueSemesters);
+    setSemester('');
+    setSubject('');
+  }, [course, subjectsList]);
+
+  useEffect(() => {
+    const filtered = subjectsList.filter(
+      (subj) =>
+        subj?.course?.trim?.().toLowerCase() === course.trim().toLowerCase() &&
+        subj?.semester?.trim?.().toLowerCase() === semester.trim().toLowerCase()
+    );
+    setFilteredSubjects(filtered);
+    setSubject('');
+  }, [course, semester, subjectsList]);
+
   const handleAddProxy = async (e) => {
     e.preventDefault();
 
@@ -45,10 +76,9 @@ const ProxyForm = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         subject,
-        student: proxyName,
-        date,
-        markedBy: userEmail,
         markedFor: proxyName,
+        markedBy: userEmail,
+        date,
       }),
     });
 
@@ -59,6 +89,8 @@ const ProxyForm = () => {
       setProxyName('');
       setSubject('');
       setDate('');
+      setCourse('');
+      setSemester('');
     } else {
       toast.error(data.message || '❌ Failed to mark proxy');
     }
@@ -70,6 +102,7 @@ const ProxyForm = () => {
 
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Mark a Proxy</h2>
       <form onSubmit={handleAddProxy} className="space-y-4">
+
         <input
           type="text"
           placeholder="Name of the person"
@@ -80,13 +113,37 @@ const ProxyForm = () => {
         />
 
         <select
+          value={course}
+          onChange={(e) => setCourse(e.target.value)}
+          className="w-full p-3 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white"
+          required
+        >
+          <option value="">Select course</option>
+          {availableCourses.map((c, idx) => (
+            <option key={idx} value={c}>{c}</option>
+          ))}
+        </select>
+
+        <select
+          value={semester}
+          onChange={(e) => setSemester(e.target.value)}
+          className="w-full p-3 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white"
+          required
+        >
+          <option value="">Select semester</option>
+          {availableSemesters.map((sem, idx) => (
+            <option key={idx} value={sem}>{sem}</option>
+          ))}
+        </select>
+
+        <select
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           className="w-full p-3 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white"
           required
         >
           <option value="">Select subject</option>
-          {subjectsList.map((subj) => (
+          {filteredSubjects.map((subj) => (
             <option key={subj._id} value={subj.name}>{subj.name}</option>
           ))}
         </select>

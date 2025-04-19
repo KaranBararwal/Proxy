@@ -4,29 +4,28 @@ import Subject from '@/models/Subject';
 
 export async function POST(req) {
     try {
-        const body = await req.json(); // ✅ Assign to 'body'
-        console.log("Received body:", body);
+        const body = await req.json();
+        const { name, course, semester } = body;
 
-        const { name } = body;
-
-        if (!name || name.trim() === '') {
+        if (!name || !course || !semester) {
             return new Response(
-                JSON.stringify({ error: 'Subject name is required' }),
+                JSON.stringify({ error: 'All fields are required' }),
                 { status: 400 }
             );
         }
 
         await connectToDB();
-        const existingSubject = await Subject.findOne({ name });
+
+        const existingSubject = await Subject.findOne({ name, course, semester });
 
         if (existingSubject) {
             return new Response(
-                JSON.stringify({ error: 'Subject already exists' }),
+                JSON.stringify({ error: 'Subject already exists for this course and semester' }),
                 { status: 400 }
             );
         }
 
-        const newSubject = new Subject({ name });
+        const newSubject = new Subject({ name, course, semester });
         await newSubject.save();
 
         return new Response(JSON.stringify({ message: 'Subject added successfully' }), {
@@ -39,6 +38,7 @@ export async function POST(req) {
         });
     }
 }
+
 
 
 // GET Method (Fetch subjects)
