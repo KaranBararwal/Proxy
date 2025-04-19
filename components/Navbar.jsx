@@ -74,7 +74,7 @@ const Navbar = () => {
                     closeMenu();
                     signOut();
                   }}
-                  className="flex items-center gap-2 text-white bg-red-600 hover:bg-red-700 font-medium rounded-lg text-sm px-4 py-2 transition"
+                  className="cursor-pointer flex items-center gap-2 text-white bg-red-600 hover:bg-red-700 font-medium rounded-lg text-sm px-4 py-2 transition"
                 >
                   <FaSignOutAlt />
                   Sign Out
