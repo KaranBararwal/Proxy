@@ -7,13 +7,14 @@ export async function GET() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
+    console.log('❌ No session found');
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
   try {
     await connectToDB();
+    console.log('✅ Connected to DB');
 
-    // Only count accepted proxies
     const markedByCount = await Proxy.countDocuments({
       markedBy: session.user.email,
       status: 'accepted',
@@ -30,7 +31,7 @@ export async function GET() {
     });
 
   } catch (err) {
-    console.error('Error fetching proxy counts:', err);
+    console.error('❌ Error in GET /api/proxy-counts:', err);
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
       status: 500,
     });
