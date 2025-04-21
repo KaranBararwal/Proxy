@@ -25,6 +25,7 @@ export async function GET(request) {
     }
 
     if (!user?.email) {
+      console.warn('Token decoded but no email found:', user);
       return new Response(JSON.stringify({ error: 'Not authenticated' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' },

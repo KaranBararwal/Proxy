@@ -42,7 +42,7 @@ export const authOptions = {
         const signedJwt = jwt.sign(
           { user: userPayload },
           process.env.JWT_SECRET,
-          { expiresIn: '1h' } // optional
+          { expiresIn: '1d' } // optional
         );
     
         token.user = userPayload;

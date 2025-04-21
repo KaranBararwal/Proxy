@@ -108,14 +108,18 @@ export default function ProxiesMarkedPage() {
         <p className="text-center text-gray-600 dark:text-gray-300">No proxies marked yet.</p>
       ) : (
         <div className="space-y-4 max-w-3xl mx-auto">
-          {proxies.map((proxy) => (
+          {proxies.map((proxy) => {
+          // console.log("🔎 proxy object:", proxy);
+          return (
+            
             <div
               key={proxy._id}
               className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border border-gray-200 dark:border-gray-700 flex justify-between items-center flex-col sm:flex-row"
             >
+              
               <div className="mb-2 sm:mb-0">
                 <p className="text-lg text-gray-800 dark:text-white font-semibold">{proxy.subject}</p>
-                <p className="text-gray-600 dark:text-gray-400">For: {proxy.student}</p>
+                <p className="text-gray-600 dark:text-gray-400">For: {proxy.markedFor}</p>
                 <p className="text-gray-500 dark:text-gray-500 text-sm">Date: {proxy.date}</p>
               </div>
               <button
@@ -125,7 +129,7 @@ export default function ProxiesMarkedPage() {
                 Delete
               </button>
             </div>
-          ))}
+          )})}
         </div>
       )}
     </div>
