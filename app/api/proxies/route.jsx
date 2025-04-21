@@ -6,6 +6,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 export async function POST(req) {
   const session = await getServerSession(authOptions);
 
+  // 🛡️ Unauthorized access protection
   if (!session) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
@@ -15,7 +16,7 @@ export async function POST(req) {
   const body = await req.json();
   const { subject, student, date } = body;
 
-  // Basic validation for missing fields
+  // ❗ Validate required fields
   if (!subject || !student || !date) {
     return new Response(JSON.stringify({ error: 'Missing fields' }), {
       status: 400,
@@ -25,15 +26,15 @@ export async function POST(req) {
   try {
     await connectToDB();
 
-    // Validate the date format (you can adjust it based on your needs)
-    const isValidDate = Date.parse(date);
-    if (isNaN(isValidDate)) {
+    // 📅 Validate date format
+    const parsedDate = Date.parse(date);
+    if (isNaN(parsedDate)) {
       return new Response(JSON.stringify({ error: 'Invalid date format' }), {
         status: 400,
       });
     }
 
-    // Check if the proxy already exists
+    // 🔁 Prevent duplicate proxy marking
     const existingProxy = await Proxy.findOne({
       student,
       subject,
@@ -48,19 +49,20 @@ export async function POST(req) {
       );
     }
 
-    // Create the new proxy
+    // ✅ Create new proxy entry
     const newProxy = new Proxy({
       subject,
       student,
-      date,
+      date: new Date(date), // storing as Date object
       markedBy: session.user.email,
       markedFor: student,
-      status: 'pending', // Default status set to 'pending'
+      status: 'pending',
     });
 
     await newProxy.save();
 
     return new Response(JSON.stringify(newProxy), { status: 201 });
+
   } catch (err) {
     console.error('Error creating proxy:', err);
     return new Response(

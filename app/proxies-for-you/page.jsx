@@ -9,6 +9,13 @@ export default function ProxiesForYouPage() {
     const fetchProxies = async () => {
       try {
         const res = await fetch('/api/proxies/for-you')
+
+        if (res.status === 500) {
+          // Refresh the page if a 500 error occurs
+          window.location.reload()
+          return
+        }
+
         const data = await res.json()
         if (Array.isArray(data)) {
           setProxies(data)
