@@ -31,7 +31,7 @@ const ProxyForm = () => {
     const fetchSubjects = async () => {
       const res = await fetch('/api/admin/subjects');
       const data = await res.json();
-      console.log("Fetched subjects:", data);
+      // console.log("Fetched subjects:", data);
       if (res.ok) {
         setSubjectsList(data);
 
