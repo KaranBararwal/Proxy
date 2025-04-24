@@ -1,4 +1,5 @@
 'use client';
+
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
@@ -11,7 +12,7 @@ const HomePage = () => {
 
   const [proxyCounts, setProxyCounts] = useState({ proxiesGiven: 0, proxiesReceived: 0 });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false); // 🔥 Track error state
+  const [error, setError] = useState(false);
 
   const fetchCounts = useCallback(async (retries = 3, delay = 1000) => {
     try {
@@ -31,7 +32,7 @@ const HomePage = () => {
     } catch (error) {
       console.error('Error fetching proxy counts:', error);
       if (retries > 0) {
-        setTimeout(() => fetchCounts(retries - 1, delay * 2), delay); // ⏳ Retry with backoff
+        setTimeout(() => fetchCounts(retries - 1, delay * 2), delay);
       } else {
         setError(true);
       }
@@ -44,9 +45,14 @@ const HomePage = () => {
     if (status === 'unauthenticated') {
       router.push('/login');
     } else if (status === 'authenticated') {
-      fetchCounts(); // ✅ Fetch when authenticated
+      // 👇 Check if password is missing
+      if (session?.user && session.user.hasPassword === false) {
+        router.push('/set-password');
+      } else {
+        fetchCounts();
+      }
     }
-  }, [status, fetchCounts]);
+  }, [status, session, fetchCounts, router]);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-4">
@@ -65,7 +71,7 @@ const HomePage = () => {
         proxiesGiven={proxyCounts.proxiesGiven}
         proxiesReceived={proxyCounts.proxiesReceived}
         loading={loading}
-        error={error} // 🔥 pass error state to ProxyCard
+        error={error}
       />
 
       <ProxyForm />
