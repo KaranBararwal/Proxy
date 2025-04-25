@@ -56,7 +56,8 @@ export const authOptions = {
           // First time Google login — create user without password
           existingUser = await User.create({
             email: profile.email,
-            username: profile.name.replace(/\s+/g, '').toLowerCase(),
+            username: null,
+            // username: profile.name.replace(/\s+/g, '').toLowerCase(),
             password: null,
           });
         }

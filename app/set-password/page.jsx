@@ -12,6 +12,9 @@ const SetPasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState('');
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
+
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -20,6 +23,22 @@ const SetPasswordPage = () => {
       router.push('/');
     }
   }, [status, session?.user?.hasPassword, router]);
+
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (username) {
+        const res = await fetch(`/api/check-username?username=${username}`);
+        const data = await res.json();
+        setUsernameAvailable(data.available);
+      } else {
+        setUsernameAvailable(null);
+      }
+    };
+  
+    const debounce = setTimeout(checkAvailability, 500);
+    return () => clearTimeout(debounce);
+  }, [username]);
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +59,7 @@ const SetPasswordPage = () => {
       const res = await fetch('/api/set-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password , username }),
       });
 
       const data = await res.json();
@@ -67,6 +86,21 @@ const SetPasswordPage = () => {
         <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Set Your Password</h2>
         <form onSubmit={handleSubmit}>
           <input
+              type="text"
+              placeholder="Username"
+              className="w-full px-4 py-2 mb-3 rounded border dark:bg-gray-700 dark:text-white"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+            {usernameAvailable === false && (
+              <p className="text-red-500 text-sm mb-2">Username is already taken</p>
+            )}
+            {usernameAvailable === true && (
+              <p className="text-green-500 text-sm mb-2">Username is available</p>
+            )}
+
+          <input
             type="password"
             placeholder="New Password"
             className="w-full px-4 py-2 mb-3 rounded border dark:bg-gray-700 dark:text-white"
@@ -86,7 +120,7 @@ const SetPasswordPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+            className="cursor-pointer w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
           >
             {loading ? 'Setting...' : 'Set Password'}
           </button>
