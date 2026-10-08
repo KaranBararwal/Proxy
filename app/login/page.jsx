@@ -68,8 +68,14 @@ const LoginPage = () => {
           Login
         </button>
 
-        <div className="my-4 text-center text-gray-400">or</div>
+        <p className="text-center text-sm text-blue-400 hover:text-blue-500 mt-3 mb-4">
+            <a href="/forgot-password" className="underline">
+              Forgot Password?
+            </a>
+          </p>
 
+          <div className="my-4 text-center text-gray-400">or</div>
+          
         {/* 👉 Google Sign In Button */}
         <button
           type="button"
@@ -99,6 +105,8 @@ const LoginPage = () => {
         </button>
 
         {error && <p className="mt-4 text-red-400 text-sm text-center">{error}</p>}
+
+        
 
         <p className="mt-6 text-center text-gray-400 text-sm">
           Don't have an account?{' '}

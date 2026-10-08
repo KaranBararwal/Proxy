@@ -4,31 +4,57 @@ import GoogleProvider from 'next-auth/providers/google';
 import { connectToDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
 export const authOptions = {
   providers: [
     // 🔐 Credentials Login
     CredentialsProvider({
       name: 'Credentials',
+
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { 
+          label: 'Email',
+          type: 'email'
+        },
+        password: {
+          label: 'Password',
+          type: 'password'
+        },
       },
+
       async authorize(credentials) {
         await connectToDB();
 
-        const user = await User.findOne({ email: credentials.email });
-        if (!user) throw new Error('No user found');
+        if(!credentials.email || !credentials.password) {
+          throw new Error('Email and password are required');
+        }
 
-        const isMatch = await bcrypt.compare(credentials.password, user.password);
-        if (!isMatch) throw new Error('Invalid password');
+        const user = await User.findOne({
+          email: credentials.email,
+        });
+
+        if (!user){ 
+          throw new Error('No user found');
+        }
+
+        if(!user.password) {
+          throw new Error('User has no password set. Please log in with Google or reset your password.');
+        }
+
+        const isMatch = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
+
+        if (!isMatch){
+          throw new Error('Invalid password');
+        }
 
         return {
-          id: user._id,
+          id: user._id.toString(),
           name: user.username,
           email: user.email,
-          hasPassword: !!user.password,
+          hasPassword: true,
         };
       },
     }),
@@ -50,20 +76,21 @@ export const authOptions = {
 
       // Google Sign-In Handling
       if (account?.provider === 'google') {
-        let existingUser = await User.findOne({ email: profile.email });
+        let existingUser = await User.findOne({
+          email: profile.email
+        });
 
         if (!existingUser) {
           // First time Google login — create user without password
           existingUser = await User.create({
             email: profile.email,
             username: null,
-            // username: profile.name.replace(/\s+/g, '').toLowerCase(),
             password: null,
           });
         }
 
         token.user = {
-          id: existingUser._id,
+          id: existingUser._id.toString(),
           email: existingUser.email,
           name: existingUser.username,
           hasPassword: !!existingUser.password,
@@ -76,18 +103,15 @@ export const authOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          hasPassword: !!user.hasPassword,
+          hasPassword: user.hasPassword,
         };
       }
 
-      // Add signed JWT token
-      token.accessToken = jwt.sign({ user: token.user }, process.env.JWT_SECRET);
       return token;
     },
 
     async session({ session, token }) {
       session.user = token.user;
-      session.token = token.accessToken;
       return session;
     },
   },
@@ -98,4 +122,5 @@ export const authOptions = {
 };
 
 const handler = NextAuth(authOptions);
+
 export { handler as GET, handler as POST };

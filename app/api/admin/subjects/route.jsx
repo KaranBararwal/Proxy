@@ -45,9 +45,23 @@ export async function POST(req) {
 export async function GET() {
     try {
       await connectToDB();
+
       const subjects = await Subject.find();
-      return new Response(JSON.stringify(subjects), { status: 200 });
+
+      return new Response(
+        JSON.stringify(subjects), 
+        { status: 200 }
+      );
+
     } catch (error) {
-      return new Response(JSON.stringify({ error: 'Failed to fetch subjects' }), { status: 500 });
+      console.error('GET SUBJECTS ERROR:', error);
+
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to fetch subjects',
+          details: error.message 
+        }), 
+        { status: 500 }
+      );
     }
-  }
+}
