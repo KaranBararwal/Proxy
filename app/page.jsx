@@ -18,6 +18,7 @@ const HomePage = () => {
     try {
       setLoading(true);
       setError(false);
+
       const res = await fetch('/api/proxy-counts');
       const data = await res.json();
 
@@ -31,30 +32,60 @@ const HomePage = () => {
       }
     } catch (error) {
       console.error('Error fetching proxy counts:', error);
+
       if (retries > 0) {
         setTimeout(() => fetchCounts(retries - 1, delay * 2), delay);
       } else {
         setError(true);
+        setLoading(false);
       }
     } finally {
+      if(retries === 0) {
       setLoading(false);
     }
+  }
   }, []);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/login');
-    } else if (status === 'authenticated') {
+      router.replace('/login');
+      return;
+    } 
+    if (status === 'authenticated') {
       // 👇 Check if password is missing
-      if (session?.user && session.user.hasPassword === false) {
-        router.push('/set-password');
-      } else {
-        fetchCounts();
+      if (session?.user?.hasPassword === false) {
+        router.replace('/set-password');
+        return;
       }
+      fetchCounts();
     }
   }, [status, session, fetchCounts, router]);
 
-  return (
+  // Do not render the home page before authentication is resolved
+  if(status === 'loading' || status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <p className="mt-4 text-gray-600 dark:text-gray-300">
+          Checking your session...
+        </p>
+      </div>
+    );
+  }
+
+  // avoid using the home page while redirecting to set password
+  if(session?.user?.hasPassword === false){
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <p className="mt-4 text-gray-600 dark:text-gray-300">
+          Redirecting...
+        </p>
+      </div>
+    );
+  }
+
+return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-4">
       <div className="flex justify-end max-w-md mx-auto">
         {error && (
