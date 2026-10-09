@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import ProxyCard from '@/components/ProxyCard';
 import ProxyForm from '@/components/ProxyForm';
+import { set } from 'mongoose';
 
 const HomePage = () => {
   const { data: session, status } = useSession();
@@ -15,35 +16,36 @@ const HomePage = () => {
   const [error, setError] = useState(false);
 
   const fetchCounts = useCallback(async (retries = 3, delay = 1000) => {
-    try {
       setLoading(true);
       setError(false);
+
+    try {
 
       const res = await fetch('/api/proxy-counts');
       const data = await res.json();
 
-      if (res.ok) {
-        setProxyCounts({
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch counts');
+      } 
+
+      setProxyCounts({
           proxiesGiven: data.markedByCount,
           proxiesReceived: data.markedForCount,
-        });
-      } else {
-        throw new Error(data.error || 'Failed to fetch counts');
-      }
+      });
+
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching proxy counts:', error);
 
       if (retries > 0) {
-        setTimeout(() => fetchCounts(retries - 1, delay * 2), delay);
+        setTimeout(() => {
+          fetchCounts(retries - 1, delay * 2)
+         },  delay);
       } else {
         setError(true);
         setLoading(false);
       }
-    } finally {
-      if(retries === 0) {
-      setLoading(false);
     }
-  }
   }, []);
 
   useEffect(() => {

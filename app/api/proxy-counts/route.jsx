@@ -15,15 +15,16 @@ export async function GET() {
     await connectToDB();
     console.log('✅ Connected to DB');
 
-    const markedByCount = await Proxy.countDocuments({
+  const [markedByCount, markedForCount] = await Promise.all([
+    Proxy.countDocuments({
       markedBy: session.user.email,
       status: 'accepted',
-    });
-
-    const markedForCount = await Proxy.countDocuments({
+    }),
+    Proxy.countDocuments({
       markedFor: session.user.name,
       status: 'accepted',
-    });
+    }),
+  ]);
 
     return new Response(JSON.stringify({ markedByCount, markedForCount }), {
       status: 200,
