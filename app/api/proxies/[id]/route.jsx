@@ -1,7 +1,7 @@
-import {getServerSession} from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
 import { connectToDB } from '@/lib/mongodb';
 import Proxy from '@/models/Proxy';
+import {getServerSession} from 'next-auth';
+import { authOptions } from '../../auth/[...nextauth]/route';
 
 export async function DELETE(request, {params}) {
   try {
