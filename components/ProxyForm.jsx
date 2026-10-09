@@ -77,7 +77,6 @@ const ProxyForm = () => {
       body: JSON.stringify({
         subject,
         markedFor: proxyName,
-        markedBy: userEmail,
         date,
       }),
     });
