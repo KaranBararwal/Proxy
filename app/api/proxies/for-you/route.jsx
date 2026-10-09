@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import Proxy from '@/models/Proxy';
-import { connectToDB } from '@/utils/db';
+import { connectToDB } from '@/lib/mongodb';
 
 export async function GET() {
   const session = await getServerSession(authOptions);

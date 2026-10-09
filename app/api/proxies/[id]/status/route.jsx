@@ -1,6 +1,6 @@
 // app/api/proxies/[id]/status/route.js
 
-import { connectToDB } from '@/utils/db'
+import { connectToDB } from '@/lib/mongodb'
 import Proxy from '@/models/Proxy'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
