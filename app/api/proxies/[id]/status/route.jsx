@@ -96,21 +96,6 @@ export async function PATCH(req, { params }) {
           throw error;
       }
 
-      // temporary 
-
-const allMatchingRequests = await Proxy.find({
-  markedFor: updatedProxy.markedFor,
-  subject: updatedProxy.subject,
-  date: updatedProxy.date,
-}).select('_id markedBy markedFor subject date status');
-
-console.log(
-  'All requests for this recipient, subject, and date:',
-  allMatchingRequests
-);
-
-
-
       await Proxy.updateMany(
         {
           _id: { $ne: updatedProxy._id },

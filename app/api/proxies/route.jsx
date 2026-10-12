@@ -52,7 +52,7 @@ export async function POST(req) {
     // 📅 Validate date format
     const parsedDate = Date.parse(date);
 
-    if (Number.isNaN(parsedDate())) {
+    if (Number.isNaN(parsedDate)) {
       return Response.json(
         { error: 'Invalid date format' },
         { status: 400 }
