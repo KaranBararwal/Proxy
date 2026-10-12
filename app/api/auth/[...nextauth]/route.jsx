@@ -55,6 +55,7 @@ export const authOptions = {
           name: user.username,
           email: user.email,
           hasPassword: true,
+          role : user.role || 'student', // default to 'student' if role is not set
         };
       },
     }),
@@ -94,6 +95,7 @@ export const authOptions = {
           email: existingUser.email,
           name: existingUser.username,
           hasPassword: !!existingUser.password,
+          role: existingUser.role || 'student', // default to 'student' if role is not set
         };
       }
 
@@ -104,6 +106,7 @@ export const authOptions = {
           email: user.email,
           name: user.name,
           hasPassword: user.hasPassword,
+          role: user.role || 'student', // default to 'student' if role is not set
         };
       }
 
