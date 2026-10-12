@@ -13,14 +13,37 @@ export async function POST(req) {
     });
   }
 
-  const body = await req.json();
+  let body;
+
+  try{
+       body = await req.json();
+  } catch {
+    return Response.json(
+      { error: 'Invalid JSON' },
+      {status : 400}
+      );
+  }
+
+  if(!body || typeof body !== 'object' || Array.isArray(body)) {
+    return Response.json(
+      { error: 'Invalid request body' },
+      { status: 400 }
+    );
+  }
+
   const { subject, student, date } = body;
 
   // ❗ Validate required fields
-  if (!subject || !student || !date) {
-    return new Response(JSON.stringify({ error: 'Missing fields' }), {
-      status: 400,
-    });
+  if (
+      typeof subject !== 'string' || !subject.trim() ||
+      typeof student !== 'string' || !student.trim() ||
+      typeof date !== 'string' || !date.trim()
+  ) 
+    {
+    return Response.json(
+      { error: 'Missing or invalid required fields' },
+      { status: 400 }
+    )
   }
 
   try {
@@ -28,10 +51,12 @@ export async function POST(req) {
 
     // 📅 Validate date format
     const parsedDate = Date.parse(date);
-    if (isNaN(parsedDate)) {
-      return new Response(JSON.stringify({ error: 'Invalid date format' }), {
-        status: 400,
-      });
+
+    if (Number.isNaN(parsedDate())) {
+      return Response.json(
+        { error: 'Invalid date format' },
+        { status: 400 }
+      );
     }
 
     // 🔁 Prevent duplicate proxy marking
@@ -53,7 +78,7 @@ export async function POST(req) {
     const newProxy = new Proxy({
       subject,
       student,
-      date: new Date(date), // storing as Date object
+      date: date.trim(), 
       markedBy: session.user.email,
       markedFor: student,
       status: 'pending',

@@ -17,7 +17,7 @@ export async function GET() {
 
     const proxies = await Proxy.find({
       markedFor: session.user.name, // user receiving the proxy
-      status: { $in: ['pending', 'accepted'] },  // $in if you want both pending + accepted
+      status: { $in: ['pending', 'accepted' , 'rejected'] },  // $in if you want both pending + accepted + rejected
     });
 
     return new Response(JSON.stringify(proxies), { status: 200 });
