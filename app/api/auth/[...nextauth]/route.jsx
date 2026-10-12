@@ -22,42 +22,50 @@ export const authOptions = {
         },
       },
 
-      async authorize(credentials) {
-        await connectToDB();
 
-        if(!credentials.email || !credentials.password) {
-          throw new Error('Email and password are required');
-        }
+async authorize(credentials) {
+    await connectToDB();
 
-        const user = await User.findOne({
-          email: credentials.email,
-        });
+    const identifier = credentials?.email?.trim();
+    const password = credentials?.password;
 
-        if (!user){ 
-          throw new Error('No user found');
-        }
+    if (!identifier || !password) {
+      throw new Error('Username/email and password are required');
+    }
 
-        if(!user.password) {
-          throw new Error('User has no password set. Please log in with Google or reset your password.');
-        }
+    // Allow login using either email or username.
+    const isEmail = identifier.includes('@');
 
-        const isMatch = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
+    const user = await User.findOne(
+      isEmail
+        ? { email: identifier.toLowerCase() }
+        : { username: { $regex: `^${identifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } }
+    );
 
-        if (!isMatch){
-          throw new Error('Invalid password');
-        }
+    if (!user) {
+      throw new Error('No account found with that username or email');
+    }
 
-        return {
-          id: user._id.toString(),
-          name: user.username,
-          email: user.email,
-          hasPassword: true,
-          role : user.role || 'student', // default to 'student' if role is not set
-        };
-      },
+    if (!user.password) {
+      throw new Error(
+        'No password is set for this account. Please use Google login or set a password.'
+      );
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      throw new Error('Invalid password');
+    }
+
+    return {
+      id: user._id.toString(),
+      name: user.username,
+      email: user.email,
+      hasPassword: true,
+      role: user.role || 'student',
+    };
+  },
     }),
 
     // 🟢 Google OAuth Login
@@ -72,7 +80,7 @@ export const authOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account, profile, trigger}) {
       await connectToDB();
 
       // Google Sign-In Handling
@@ -110,11 +118,30 @@ export const authOptions = {
         };
       }
 
+      // Refresh user information from MonogDB when the client calls update()
+      if(trigger === 'update' && token.user?.email){
+        const existingUser = await User.findOne({
+          email : token.user.email,
+        });
+
+        if(existingUser){
+          token.user = {
+            id : existingUser._id.toString(),
+            email : existingUser.email,
+            name : existingUser.username,
+            hasPassword : !!existingUser.password,
+            role: existingUser.role || 'student',
+          };
+        }
+      }
+
       return token;
     },
 
     async session({ session, token }) {
-      session.user = token.user;
+    if (token.user) {
+        session.user = token.user;
+    }
       return session;
     },
   },
